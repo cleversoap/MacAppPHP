@@ -73,7 +73,6 @@ class AppStore
 		$results["current_page"] = $page;
 		if (preg_match('/<span class="pagination-description">\d+\-\d+\s*\w+\s*(\d+)/', $search_xml, $cur_regex))
 		{
-			echo 'fffff';
 			$results["total_results"] = $cur_regex[1];
 			$results["total_pages"] = ceil($results["total_results"] / 120);
 		}
