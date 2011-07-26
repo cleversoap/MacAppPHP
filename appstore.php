@@ -18,10 +18,6 @@ class AppStore
 		curl_setopt($this->curl, CURLOPT_URL, "http://ax.search.itunes.apple.com/WebObjects/MZSearch.woa/wa/search?q=" . urlencode($term));
 		$search_xml = utf8_decode(curl_exec($this->curl));
 
-		$results["current_page"] = $page;
-		$results["total_pages"] = 1; // TODO: Get actual page count
-		$results["total_results"] = 1; // TODO: Get actual total number of results
-
 		// Parse out the individual container elements that contain the listings
 		// It may seem like for some elements the container is too big but this is needed to cleanly get elements with no ratings
 		preg_match_all('/role="group"(.*)<\/button>/sU',$search_xml,$matches,PREG_OFFSET_CAPTURE);
@@ -72,6 +68,21 @@ class AppStore
 			else
 				$results["results"][] = $result;
 		}
+
+		// Pagination
+		$results["current_page"] = $page;
+		if (preg_match('/<span class="pagination-description">\d+\-\d+\s*\w+\s*(\d+)/', $search_xml, $cur_regex))
+		{
+			echo 'fffff';
+			$results["total_results"] = $cur_regex[1];
+			$results["total_pages"] = ceil($results["total_results"] / 120);
+		}
+		else
+		{
+			$results["total_pages"] = 1;
+			$results["total_results"] = count($results["results"]);
+		}
+
 
 		return $results;
 	}
