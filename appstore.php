@@ -12,6 +12,7 @@ class AppStore
 		$this->country = $country;
 	}
 
+	// TODO: Add an option to get proper names for overly long titles from their details page?
 	public function Search($term,$page=1,$indexById=false)
 	{
 		// TODO: Page settings
@@ -55,6 +56,10 @@ class AppStore
 				$result["rating"] = count($cur_regex[0]) + preg_match('/rating\-star half"/', $match) * 0.5;
 			}
 
+			// Price
+			preg_match('/<span class="price">([^<]+)<\/span>/', $match, $cur_regex);
+			$result["price"] = $cur_regex[1];
+
 			// Number of customer votes if they exist
 			if(preg_match('/<span class="rating-count">(\d+)/', $match, $cur_regex))
 				$result["votes"] = $cur_regex[1];
@@ -90,6 +95,7 @@ class AppStore
 	{
 		curl_setopt($this->curl, CURLOPT_URL, "http://itunes.apple.com/" . $this->country . "/app/id" . $id);
 		$details_xml = curl_exec($this->curl);
+		return $details_xml;
 	}
 
 	public function BrowseCategory($catId,$page)
