@@ -7,7 +7,6 @@ class AppStore
 	public function __construct($country="us")
 	{
 		$this->curl = curl_init();
-		curl_setopt($this->curl, CURLOPT_USERAGENT, "iMacAppStore/1.0.1 (Macintosh; U; Intel Mac OS X 10.6.7; en) AppleWebKit/533.20.25");
 		curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, 1);
 		$this->country = $country;
 	}
@@ -15,6 +14,7 @@ class AppStore
 	// TODO: Add an option to get proper names for overly long titles from their details page?
 	public function Search($term,$page=1,$indexById=false)
 	{
+		curl_setopt($this->curl, CURLOPT_USERAGENT, "iMacAppStore/1.0.1 (Macintosh; U; Intel Mac OS X 10.6.7; en) AppleWebKit/533.20.25");
 		// TODO: Page settings
 		curl_setopt($this->curl, CURLOPT_URL, "http://ax.search.itunes.apple.com/WebObjects/MZSearch.woa/wa/search?q=" . urlencode($term));
 		$search_xml = utf8_decode(curl_exec($this->curl));
@@ -93,9 +93,40 @@ class AppStore
 
 	public function Details($id)
 	{
+		// Change to non-app store browser as this can all be viewed in a normal browser
+		// TODO: See if this data can in fact be pulled from the app store's javascript calls
+		curl_setopt($this->curl, CURLOPT_USERAGENT, "MacAppPHP");
 		curl_setopt($this->curl, CURLOPT_URL, "http://itunes.apple.com/" . $this->country . "/app/id" . $id);
 		$details_xml = curl_exec($this->curl);
-		return $details_xml;
+
+		// ID (already set)
+		$details["id"] = $id;
+
+		// Title
+		preg_match('/<h1>([^<]+)</', $details_xml, $cur_regex);
+		$details["title"] = $cur_regex[1];
+
+		// Author
+		preg_match('/<\/h1>\s*<h2>[^\s]+\s([^<]+)</U', $details_xml, $cur_regex);
+		$details["author"] = $cur_regex[1];
+
+		// TODO: Category
+		$details["category"] = "Uknown";
+
+		// Icon
+		preg_match('/class="artwork" src="([^"]+)"/', $details_xml, $cur_regex);
+		$details["icon"] = $cur_regex[1];
+
+		// Description
+		preg_match('/<\/h4>\s*<p>(.*)<\/p>/sUm', $details_xml, $cur_regex);
+		$details["description"] = preg_replace('/<br\\s*?\/??>/i', '', htmlspecialchars_decode(utf8_encode($cur_regex[1])));
+
+		// Screenshots
+		preg_match_all('/class="landscape" src="([^"]+)"/', $details_xml, $cur_regex);
+		foreach($cur_regex[1] as $screenshot)
+			$details["screenshots"][] = $screenshot;
+
+		return $details;
 	}
 
 	public function BrowseCategory($catId,$page)
