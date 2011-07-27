@@ -114,7 +114,7 @@ class AppStore
 		$details["category"] = "Uknown";
 
 		// Icon
-		preg_match('/class="artwork" src="([^"]+)"/', $details_xml, $cur_regex);
+		preg_match('/alt="' . $details["title"] . '" class="artwork" src="([^"]+)"/', $details_xml, $cur_regex);
 		$details["icon"] = $cur_regex[1];
 
 		// Description
