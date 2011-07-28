@@ -114,12 +114,12 @@ class AppStore
 		$details["category"] = "Uknown";
 
 		// Icon
-		preg_match('/alt="' . $details["title"] . '" class="artwork" src="([^"]+)"/', $details_xml, $cur_regex);
+		preg_match('/width="175" height="175" alt="[^"]+" class="artwork" src="([^"]+)"/', $details_xml, $cur_regex);
 		$details["icon"] = $cur_regex[1];
 
 		// Description
 		preg_match('/<\/h4>\s*<p>(.*)<\/p>/sUm', $details_xml, $cur_regex);
-		$details["description"] = preg_replace('/<br\\s*?\/??>/i', '', htmlspecialchars_decode(utf8_encode($cur_regex[1])));
+		$details["description"] = preg_replace('/<br\\s*?\/??>/i', '\n', htmlspecialchars_decode(utf8_encode($cur_regex[1])));
 
 		// Screenshots
 		preg_match_all('/class="landscape" src="([^"]+)"/', $details_xml, $cur_regex);
